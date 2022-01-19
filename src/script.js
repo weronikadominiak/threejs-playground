@@ -5,6 +5,8 @@ import * as dat from "dat.gui";
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
+const gltfLoader = new GLTFLoader();
+
 // Debug
 const gui = new dat.GUI();
 
@@ -13,6 +15,17 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
+
+// My #3d object
+
+let forest = null;
+
+gltfLoader.load("forest.gltf", (gltf) => {
+  forest = gltf.scene;
+  scene.add(forest);
+
+  //   gui.add(gltf.scene.rotation, "x".min(0).max(9)); // TODO this doesnt work
+});
 
 // // Objects
 // const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
@@ -28,10 +41,10 @@ const scene = new THREE.Scene();
 
 // Lights
 
-const pointLight = new THREE.PointLight(0xffffff, 0.1);
-pointLight.position.x = 2;
-pointLight.position.y = 3;
-pointLight.position.z = 4;
+const pointLight = new THREE.DirectionalLight(0xf74e00, 3);
+pointLight.position.x = 0;
+pointLight.position.y = 30;
+pointLight.position.z = 20;
 scene.add(pointLight);
 
 /**
@@ -67,8 +80,8 @@ const camera = new THREE.PerspectiveCamera(
   100
 );
 camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 2;
+camera.position.y = 5;
+camera.position.z = 15;
 scene.add(camera);
 
 // Controls
@@ -80,6 +93,7 @@ scene.add(camera);
  */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
+  alpha: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -93,8 +107,10 @@ const clock = new THREE.Clock();
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
-  // Update objects
-  // sphere.rotation.y = .5 * elapsedTime
+  if (forest) {
+    // Update objects
+    forest.rotation.y = 0.5 * elapsedTime;
+  }
 
   // Update Orbital Controls
   // controls.update()
