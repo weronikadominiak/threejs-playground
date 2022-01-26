@@ -20,32 +20,29 @@ const scene = new THREE.Scene();
 
 let forest = null;
 
-gltfLoader.load("forest.gltf", (gltf) => {
+gltfLoader.load("forest2-gltf.gltf", (gltf) => {
   forest = gltf.scene;
   scene.add(forest);
-
-  //   gui.add(gltf.scene.rotation, "x".min(0).max(9)); // TODO this doesnt work
 });
-
-// // Objects
-// const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
-
-// // Materials
-
-// const material = new THREE.MeshBasicMaterial()
-// material.color = new THREE.Color(0xff0000)
-
-// // Mesh
-// const sphere = new THREE.Mesh(geometry,material)
-// scene.add(sphere)
 
 // Lights
 
-const pointLight = new THREE.DirectionalLight(0xf74e00, 3);
-pointLight.position.x = 0;
-pointLight.position.y = 30;
-pointLight.position.z = 20;
-scene.add(pointLight);
+// const pointLight = new THREE.AmbientLight(0xffffff);
+// const pointLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+// const pointLight = new THREE.Light(0xffffff, 1.5);
+// const light = new THREE.DirectionalLight(0xf74e00, 3);
+const light = new THREE.PointLight(0xffffff, 1.5);
+light.position.x = 0; // these could be also just light.set(0, 30, 20)
+light.position.y = 10; // change to 100 to show the difference
+light.position.z = 20; // change to -100 to show
+light.castShadow = true;
+scene.add(light);
+
+//Set up shadow properties for the light
+light.shadow.mapSize.width = 512; // default
+light.shadow.mapSize.height = 512; // default
+light.shadow.camera.near = 0.5; // default
+light.shadow.camera.far = 500; // default
 
 /**
  * Sizes
@@ -85,8 +82,8 @@ camera.position.z = 15;
 scene.add(camera);
 
 // Controls
-// const controls = new OrbitControls(camera, canvas)
-// controls.enableDamping = true
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
 
 /**
  * Renderer
@@ -97,6 +94,8 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 /**
  * Animate
@@ -113,7 +112,7 @@ const tick = () => {
   }
 
   // Update Orbital Controls
-  // controls.update()
+  controls.update();
 
   // Render
   renderer.render(scene, camera);
