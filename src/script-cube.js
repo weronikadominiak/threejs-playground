@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { toHalfFloat } from "three";
 
 const gltfLoader = new GLTFLoader();
 
@@ -16,25 +17,30 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new THREE.Scene();
 
+let mixer;
+
 // My #3d object
 
 let forest = null;
 
 gltfLoader.load("cube-bmc-test2.glb", (gltf) => {
-  forest = gltf.scene;
-  scene.add(forest);
+  scene.add(gltf.scene);
+
+  mixer = new THREE.AnimationMixer(gltf.scene);
+
+  gltf.animations.forEach((clip) => {
+    mixer.clipAction(clip).play();
+  });
+
+  console.log(gltf.animations);
 });
 
 // Lights
 
-// const pointLight = new THREE.AmbientLight(0xffffff);
-// const pointLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
-// const pointLight = new THREE.Light(0xffffff, 1.5);
-// const light = new THREE.DirectionalLight(0xf74e00, 3);
 const light = new THREE.PointLight(0xffffff, 1.5);
-light.position.x = 0; // these could be also just light.set(0, 30, 20)
-light.position.y = 10; // change to 100 to show the difference
-light.position.z = 20; // change to -100 to show
+light.position.x = 0;
+light.position.y = 10;
+light.position.z = 20;
 light.castShadow = true;
 scene.add(light);
 
@@ -101,29 +107,16 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
  * Animate
  */
 
-// Stackoverflow
-
-const mixer = new THREE.AnimationMixer();
-console.log(mixer);
-
 const clock = new THREE.Clock();
 
 const tick = () => {
-  const elapsedTime = clock.getElapsedTime();
+  requestAnimationFrame(tick);
 
-  if (forest) {
-    // Update objects
-    // forest.rotation.y = 0.5 * elapsedTime;
-  }
+  var delta = clock.getDelta();
 
-  // Update Orbital Controls
-  controls.update();
+  if (mixer) mixer.update(delta);
 
-  // Render
   renderer.render(scene, camera);
-
-  // Call tick again on the next frame
-  window.requestAnimationFrame(tick);
 };
 
 tick();
