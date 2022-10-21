@@ -1,15 +1,9 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import * as dat from "dat.gui";
-
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { toHalfFloat } from "three";
 
 const gltfLoader = new GLTFLoader();
-
-// Debug
-const gui = new dat.GUI();
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -19,20 +13,38 @@ const scene = new THREE.Scene();
 
 let mixer;
 
-// My #3d object
+let animations = {};
+let activeAnimation;
 
-let forest = null;
-
-gltfLoader.load("cube-bmc-test2.glb", (gltf) => {
+gltfLoader.load("cube-bmc-test5.glb", (gltf) => {
   scene.add(gltf.scene);
 
   mixer = new THREE.AnimationMixer(gltf.scene);
 
-  gltf.animations.forEach((clip) => {
-    mixer.clipAction(clip).play();
-  });
+  animations = {
+    idle: gltf.animations[1],
+    click: gltf.animations[2],
+  };
 
-  console.log(gltf.animations);
+  console.log(gltf);
+
+  activeAnimation = animations.idle;
+
+  // gltf.animations.forEach((clip) => {
+  //   console.log(clip);
+  //   // mixer.clipAction(clip).play();
+  // });
+
+  window.addEventListener("click", () => {
+    mixer.clipAction(activeAnimation).stop();
+    console.dir(mixer.clipAction(activeAnimation));
+
+    if (activeAnimation === animations.idle) {
+      activeAnimation = animations.click;
+    } else {
+      activeAnimation = animations.idle;
+    }
+  });
 });
 
 // Lights
@@ -114,7 +126,10 @@ const tick = () => {
 
   var delta = clock.getDelta();
 
-  if (mixer) mixer.update(delta);
+  if (mixer) {
+    mixer.update(delta);
+    mixer.clipAction(activeAnimation).setLoop(THREE.LoopOnce).play();
+  }
 
   renderer.render(scene, camera);
 };
