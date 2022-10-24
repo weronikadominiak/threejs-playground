@@ -11,15 +11,20 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new THREE.Scene();
 
-let mixer;
+let mixers = {
+  left: null,
+  middle: null,
+  right: null,
+};
 
 let animations = {};
 let activeAnimation;
 
+// CUBE 1
 gltfLoader.load("cube-basic-animation.glb", (gltf) => {
   scene.add(gltf.scene);
 
-  mixer = new THREE.AnimationMixer(gltf.scene);
+  mixers.middle = new THREE.AnimationMixer(gltf.scene);
 
   console.log(gltf.animations);
 
@@ -29,13 +34,10 @@ gltfLoader.load("cube-basic-animation.glb", (gltf) => {
     win: gltf.animations[2],
   };
 
-  console.log(gltf);
-
   activeAnimation = animations.idle;
 
   window.addEventListener("click", () => {
-    mixer.clipAction(activeAnimation).stop();
-    console.dir(mixer.clipAction(activeAnimation));
+    mixers.middle.clipAction(activeAnimation).stop();
 
     if (activeAnimation === animations.idle) {
       activeAnimation = animations.win;
@@ -45,20 +47,31 @@ gltfLoader.load("cube-basic-animation.glb", (gltf) => {
   });
 });
 
+// CUBE 2
+gltfLoader.load("cube-basic-animation2.glb", (gltf) => {
+  gltf.scene.position.x = -5;
+  scene.add(gltf.scene);
+
+  console.log(gltf);
+
+  mixers.left = new THREE.AnimationMixer(gltf.scene);
+});
+
+// CUBE 3
+gltfLoader.load("cube-basic-animation2.glb", (gltf) => {
+  gltf.scene.position.x = 5;
+  scene.add(gltf.scene);
+
+  mixers.right = new THREE.AnimationMixer(gltf.scene);
+});
+
 // Lights
 
-const light = new THREE.PointLight(0xffffff, 1.5);
+const light = new THREE.PointLight(0xffffff, 3);
 light.position.x = 0;
-light.position.y = 10;
+light.position.y = 5;
 light.position.z = 20;
-light.castShadow = true;
 scene.add(light);
-
-//Set up shadow properties for the light
-light.shadow.mapSize.width = 512; // default
-light.shadow.mapSize.height = 512; // default
-light.shadow.camera.near = 0.5; // default
-light.shadow.camera.far = 500; // default
 
 /**
  * Sizes
@@ -124,9 +137,17 @@ const tick = () => {
 
   var delta = clock.getDelta();
 
-  if (mixer) {
-    mixer.update(delta);
-    mixer.clipAction(activeAnimation).play();
+  if (mixers.middle) {
+    mixers.middle.update(delta);
+    mixers.middle.clipAction(activeAnimation).play();
+  }
+  if (mixers.left) {
+    mixers.left.update(delta);
+    mixers.left.clipAction(animations.idle).play();
+  }
+  if (mixers.right) {
+    mixers.right.update(delta);
+    mixers.right.clipAction(animations.idle).play();
   }
 
   renderer.render(scene, camera);
