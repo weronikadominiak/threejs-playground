@@ -16,31 +16,29 @@ let mixer;
 let animations = {};
 let activeAnimation;
 
-gltfLoader.load("cube-bmc-test5.glb", (gltf) => {
+gltfLoader.load("cube-basic-animation.glb", (gltf) => {
   scene.add(gltf.scene);
 
   mixer = new THREE.AnimationMixer(gltf.scene);
 
+  console.log(gltf.animations);
+
   animations = {
-    idle: gltf.animations[1],
-    click: gltf.animations[2],
+    idle: gltf.animations[0],
+    click: gltf.animations[1],
+    win: gltf.animations[2],
   };
 
   console.log(gltf);
 
   activeAnimation = animations.idle;
 
-  // gltf.animations.forEach((clip) => {
-  //   console.log(clip);
-  //   // mixer.clipAction(clip).play();
-  // });
-
   window.addEventListener("click", () => {
     mixer.clipAction(activeAnimation).stop();
     console.dir(mixer.clipAction(activeAnimation));
 
     if (activeAnimation === animations.idle) {
-      activeAnimation = animations.click;
+      activeAnimation = animations.win;
     } else {
       activeAnimation = animations.idle;
     }
@@ -128,7 +126,7 @@ const tick = () => {
 
   if (mixer) {
     mixer.update(delta);
-    mixer.clipAction(activeAnimation).setLoop(THREE.LoopOnce).play();
+    mixer.clipAction(activeAnimation).play();
   }
 
   renderer.render(scene, camera);
